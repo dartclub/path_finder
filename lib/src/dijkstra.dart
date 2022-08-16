@@ -11,21 +11,29 @@ class Path<T> {
 List<Path<T>> dijkstra<T>(
   Graph<T> graph,
   T start,
-  CalculatePriorityFunction<T> calcPriority,
+  CalculateWeightFunction<T> calcWeight,
 ) {
   List<Path<T>> paths = [Path(start, null, 0)];
 
-  var queue = PriorityQueue<T>();
+  final queue = PriorityQueue<T>();
+  final visited = <T>[];
+
   _filter(Node<T> el) => el.self == start;
-  queue.push(graph.nodes.singleWhere(_filter));
+  queue.push(graph.nodes.singleWhere(_filter), 0);
   queue.pushAll(graph.nodes.where((el) => !_filter(el)));
 
+  print(queue.items.map((e) => e.node.self));
+
   while (queue.isNotEmpty) {
-    var min = queue.pop();
+    final min = queue.pop();
+    visited.add(min.node.self);
     for (var neighbor in min.node.neighbours) {
-      num alt = min.priority + calcPriority(min.node, Node(neighbor, []));
-      if (alt < queue.getPriorityByT(neighbor) &&
-          min.priority != double.infinity) {
+      print('${min.node.self}: $neighbor');
+      if (visited.contains(neighbor)) continue;
+      num alt = min.priority + calcWeight(min.node, Node(neighbor, []));
+      print('\talt: $alt');
+      if (alt < queue.getPriorityByT(neighbor)) {
+        print('\ttrue');
         paths.add(Path(neighbor, min.node.self, alt));
         queue.decreasePriorityByT(neighbor, alt);
       }
@@ -36,8 +44,10 @@ List<Path<T>> dijkstra<T>(
 }
 
 List<T> getShortestPath<T>(
-    Graph<T> graph, T start, T end, CalculatePriorityFunction<T> calcPriority) {
-  var paths = dijkstra(graph, start, calcPriority);
+    Graph<T> graph, T start, T end, CalculateWeightFunction<T> calcWeight) {
+  var paths = dijkstra<T>(graph, start, calcWeight);
+  print(paths.map((e) => '[${e.previous} -> ${e.key}, w: ${e.priority}]'));
+
   var path = paths.singleWhere((element) => element.key == end);
   var nodes = [path.key];
   var prev = path.previous;

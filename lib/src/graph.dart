@@ -3,8 +3,14 @@ class Edge<T> {
   T get start => list.first;
   T get end => list.last;
   final bool bothDirections;
+  num? weight;
 
-  Edge(T start, T last, [this.bothDirections = true]) : list = [start, last];
+  Edge(
+    T start,
+    T last, {
+    this.weight = double.infinity,
+    this.bothDirections = true,
+  }) : list = [start, last];
 }
 
 class Node<T> {
@@ -35,6 +41,7 @@ class Graph<T> {
           // noffing
         }
       }
+      generatedNodes.add(Node(pos, neighbors));
     }
     return generatedNodes.toList();
   }
